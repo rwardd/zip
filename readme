@@ -1,3 +1,28 @@
 rvzg zig rtos
 ===
-wip
+Start with microkernel. Implement barebones for basic scheduling and i/o.
+Get it running on softcore rv32.
+Maybe will move to monolithic design.
+
+todo: everything
+- thread creation
+	- just do compile time for now
+- thread memory
+	- tls
+	- thread memory arenas?
+- thread scheduler
+	- most threads should run in ring 0? No syscalls?
+	  instead implement a check before calling syscall fns
+- timers
+	- hardware
+	- softare
+- atomics
+- serial logger
+- mempool/arena/slab?
+- ipc
+	- message queue
+	- semaphore
+	- mutex
+	- queue
+- smp?
+

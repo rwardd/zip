@@ -25,9 +25,9 @@ pub fn build(b: *std.Build) void {
         .cpu_features_sub = disabled_features,
     };
 
-    const exe = b.addExecutable(.{ .target = b.resolveTargetQuery(target), .name = "hello", .root_source_file = b.path("src/main.zig") });
-    exe.addAssemblyFile(b.path("src/_start.S"));
-    exe.setLinkerScriptPath(b.path("src/link.ld"));
+    const exe = b.addExecutable(.{ .target = b.resolveTargetQuery(target), .name = "rvzg", .root_source_file = b.path("src/init.zig") });
+    exe.addAssemblyFile(b.path("arch/riscv/rv32/_start.S"));
+    exe.setLinkerScriptPath(b.path("arch/riscv/rv32/link.ld"));
 
     b.installArtifact(exe);
 }
