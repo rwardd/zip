@@ -7,10 +7,11 @@ pub const tcb = struct {
 
 var tcb_ll: std.SinglyLinkedList(*tcb) = undefined;
 
-pub fn thread_create(priority: u32, id: u32, tcb_buffer: *tcb) void {
-    tcb_buffer.id = id;
-    tcb_buffer.priority = priority;
+pub fn get_task_id() u32 {
+    return tcb_ll.first.?.data.id;
+}
 
+pub fn thread_create(tcb_buffer: *tcb) void {
     var tcb_node: std.SinglyLinkedList(*tcb).Node = .{ .data = tcb_buffer };
     tcb_ll.prepend(&tcb_node);
 }
