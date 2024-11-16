@@ -4,6 +4,8 @@ Start with microkernel. Implement barebones for basic scheduling and i/o.
 Get it running on softcore rv32.
 Maybe will move to monolithic design.
 
+Statically allocate tasks for now
+
 todo: everything
 - thread creation
 	- just do compile time for now

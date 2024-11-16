@@ -17,7 +17,6 @@ pub fn build(b: *std.Build) void {
     enabled_features.addFeature(@intFromEnum(features.m));
 
     const target = CrossTarget{
-        // Build for RISC-V
         .cpu_arch = Target.Cpu.Arch.riscv32,
         .os_tag = Target.Os.Tag.freestanding,
         .abi = Target.Abi.none,
@@ -25,9 +24,29 @@ pub fn build(b: *std.Build) void {
         .cpu_features_sub = disabled_features,
     };
 
-    const exe = b.addExecutable(.{ .target = b.resolveTargetQuery(target), .name = "rvzg", .root_source_file = b.path("src/init.zig") });
+    const exe = b.addExecutable(.{
+        .target = b.resolveTargetQuery(target),
+        .name = "rvzg",
+        .root_source_file = b.path("src/init.zig"),
+    });
+
     exe.addAssemblyFile(b.path("arch/riscv/rv32/_start.S"));
     exe.setLinkerScriptPath(b.path("arch/riscv/rv32/link.ld"));
 
     b.installArtifact(exe);
+
+    const qemu = b.addSystemCommand(&.{
+        "qemu-system-riscv32",
+        "-machine",
+        "virt",
+        "-bios",
+        "none",
+        "-kernel",
+        "zig-out/bin/rvzg",
+        "-nographic",
+    });
+
+    qemu.step.dependOn(b.default_step);
+    const run_step = b.step("run", "Start qemu");
+    run_step.dependOn(&qemu.step);
 }
