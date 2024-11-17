@@ -10,9 +10,10 @@ fn log(msg: []const u8) void {
 
 export fn start() noreturn {
     var new_tcb: thread.tcb = undefined;
-    new_tcb.id = 1;
+    new_tcb.id = 2;
     new_tcb.priority = 1;
     thread.thread_create(&new_tcb);
+
     const x: u32 = thread.get_task_id();
     const p1: u8 = @intCast(x & 0xff);
     const p2: u8 = @intCast((x >> 8) & 0xff);

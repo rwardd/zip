@@ -6,6 +6,11 @@ Maybe will move to monolithic design.
 
 Statically allocate tasks for now
 
+todo:
+- Create basic kernel memory allocator
+	- just use static pool for now
+	- allocate tcb in pool upon task creation
+	- store sp/pc
 todo: everything
 - thread creation
 	- just do compile time for now
