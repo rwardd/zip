@@ -4,6 +4,7 @@ const Target = std.Target;
 const Feature = std.Target.Cpu.Feature;
 
 pub fn build(b: *std.Build) void {
+    const debug = b.option(bool, "debug", "Run qemu in debug mode") orelse false;
     const features = Target.riscv.Feature;
     var disabled_features = Feature.Set.empty;
     var enabled_features = Feature.Set.empty;
@@ -35,7 +36,7 @@ pub fn build(b: *std.Build) void {
 
     b.installArtifact(exe);
 
-    const qemu = b.addSystemCommand(&.{
+    const qemu_args = .{
         "qemu-system-riscv32",
         "-machine",
         "virt",
@@ -44,9 +45,17 @@ pub fn build(b: *std.Build) void {
         "-kernel",
         "zig-out/bin/rvzg",
         "-nographic",
-    });
+    };
+
+    const qemu = b.addSystemCommand(&qemu_args);
+
+    if (debug) {
+        qemu.addArg("-s");
+        qemu.addArg("-S");
+    }
 
     qemu.step.dependOn(b.default_step);
     const run_step = b.step("run", "Start qemu");
+
     run_step.dependOn(&qemu.step);
 }
