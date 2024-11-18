@@ -1,33 +1,49 @@
 const thread = @import("thread/tcb.zig");
 const logger = @import("log.zig");
 
+fn hello1(args: ?*anyopaque) void {
+    _ = args;
+    logger.log("Hello from task 1\n");
+}
+
+fn hello2(args: ?*anyopaque) void {
+    _ = args;
+    logger.log("Hello from task 2\n");
+}
+
+fn hello3(args: ?*anyopaque) void {
+    _ = args;
+    logger.log("Hello from task 3\n");
+}
+
+fn log_number(x: u32) void {
+    // Obviously bad and will need to fix
+    const conv: u8 = @intCast(x & 0xff);
+    const num = [_]u8{conv + 0x30};
+    logger.log(&num);
+    logger.log("\n");
+}
+
 export fn start() noreturn {
+    // BIG TODO: Look at a better way to store task structures
+    // Not a fan of just keeping them here on the start stack
+    // Should be defined in memory region ???
     var thread1_id = thread.thread_create_handle();
     var thread2_id = thread.thread_create_handle();
     var thread3_id = thread.thread_create_handle();
 
-    thread.thread_create(&thread1_id, 1, 2);
-    thread.thread_create(&thread2_id, 2, 3);
+    thread.thread_create(&thread1_id, &hello1, 1, 3);
+    thread.thread_create(&thread2_id, &hello2, 2, 2);
+    thread.thread_create(&thread3_id, &hello3, 3, 1);
 
-    const x: u32 = thread.get_first_task_prio();
-    const p1: u8 = @intCast(x & 0xff);
-    const p2: u8 = @intCast((x >> 8) & 0xff);
-    const p3: u8 = @intCast((x >> 16) & 0xff);
-    const p4: u8 = @intCast((x >> 24) & 0xff);
-    const y: [4]u8 = .{ 65 + p1, 65 + p2, 65 + p3, 65 + p4 };
+    log_number(thread.get_thread_tcb(1).?.priority);
+    log_number(thread.get_thread_tcb(2).?.priority);
+    log_number(thread.get_thread_tcb(3).?.priority);
 
-    thread.thread_create(&thread3_id, 3, 1);
-    const x1: u32 = thread.get_task_priority();
-    const p11: u8 = @intCast(x1 & 0xff);
-    const p21: u8 = @intCast((x1 >> 8) & 0xff);
-    const p31: u8 = @intCast((x1 >> 16) & 0xff);
-    const p41: u8 = @intCast((x1 >> 24) & 0xff);
-    const y1: [4]u8 = .{ 65 + p11, 65 + p21, 65 + p31, 65 + p41 };
+    if (thread1_id.tick) |tick_fn| {
+        tick_fn(null);
+    }
 
-    logger.log(&y);
-    logger.log("\n");
-    logger.log(&y1);
-    logger.log("\n");
     logger.log("Hello world\n");
     while (true) {}
 }
