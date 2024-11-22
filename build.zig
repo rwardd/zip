@@ -17,7 +17,7 @@ pub fn build(b: *std.Build) void {
 
     enabled_features.addFeature(@intFromEnum(features.m));
 
-    const target = CrossTarget{
+    const target = std.Target.Query{
         .cpu_arch = Target.Cpu.Arch.riscv32,
         .os_tag = Target.Os.Tag.freestanding,
         .abi = Target.Abi.none,
