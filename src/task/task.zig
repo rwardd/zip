@@ -4,21 +4,26 @@ const std = @import("std");
 // TODO: properly implement this
 pub const thread_fn = *const fn (args: ?*anyopaque) void;
 
-pub const idle_task: ?*task_handle = @constCast(&task_handle{
-    .control = tcb{ .id = 1, .priority = 32, .sp = 0 },
+pub var idle_task: task_handle = task_handle{
+    .control = tcb{ .id = 0, .priority = 32, .sp = 0 },
     .tick = @import("../sched/sched.zig").idle_tick,
     .next = null,
-});
+};
 
-pub var current_task: ?*task_handle = idle_task;
+var current_task: *task_handle = &idle_task;
 
 /// More stuff to go in here:
 ///     - tick fn
 ///     - stack addr
 pub const task_handle = struct {
+    const Self = @This();
     control: tcb,
     tick: ?thread_fn = null,
     next: ?*task_handle = null,
+
+    pub fn get_tcb(self: *Self) ?*tcb {
+        return &self.control;
+    }
 };
 
 const tcb = struct {
@@ -46,25 +51,21 @@ pub fn thread_create_handle() task_handle {
 }
 
 pub fn get_thread_tcb(id: u32) ?*tcb {
-    var current = idle_task;
+    var current: ?*task_handle = &idle_task;
     while (current) |node| : (current = node.next) {
         if (node.control.id == id) {
-            return &current.?.control;
+            return node.get_tcb();
         }
     }
 
     return &current.?.control;
 }
 
-pub fn thread_create(handle: *task_handle, tick_fn: thread_fn, id: u32, priority: u32) void {
+pub fn thread_create(handle: *task_handle, tick_fn: thread_fn, priority: u32) void {
     handle.control.priority = priority;
-    handle.control.id = id;
+    handle.control.id = current_task.control.id + 1;
     handle.tick = tick_fn;
 
-    if (current_task) |current| {
-        current.next = handle;
-        current_task = handle;
-    } else {
-        current_task = handle;
-    }
+    current_task.next = handle;
+    current_task = handle;
 }

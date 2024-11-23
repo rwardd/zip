@@ -42,9 +42,9 @@ export fn start() noreturn {
     var thread2_id = task.thread_create_handle();
     var thread3_id = task.thread_create_handle();
 
-    task.thread_create(&thread1_id, &hello1, 1, 3);
-    task.thread_create(&thread2_id, &hello2, 2, 2);
-    task.thread_create(&thread3_id, &hello3, 3, 1);
+    task.thread_create(&thread1_id, &hello1, 3);
+    task.thread_create(&thread2_id, &hello2, 2);
+    task.thread_create(&thread3_id, &hello3, 1);
 
     log_number(task.get_thread_tcb(1).?.priority);
     log_number(task.get_thread_tcb(2).?.priority);
