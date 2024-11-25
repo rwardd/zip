@@ -31,8 +31,8 @@ pub fn build(b: *std.Build) void {
         .root_source_file = b.path("src/init.zig"),
     });
 
-    exe.addAssemblyFile(b.path("arch/riscv/rv32/_start.S"));
-    exe.setLinkerScriptPath(b.path("arch/riscv/rv32/link.ld"));
+    exe.addAssemblyFile(b.path("src/arch/riscv/rv32/_start.S"));
+    exe.setLinkerScriptPath(b.path("src/arch/riscv/rv32/link.ld"));
 
     b.installArtifact(exe);
 
