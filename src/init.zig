@@ -39,9 +39,9 @@ export fn start() noreturn {
     // Not a fan of just keeping them here on the start stack
     // Should be defined in memory region ???
 
-    var thread1_stack = [_]usize{0} ** 10;
-    var thread2_stack = [_]usize{0} ** 10;
-    var thread3_stack = [_]usize{0} ** 10;
+    var thread1_stack = [_]usize{0} ** 256;
+    var thread2_stack = [_]usize{0} ** 256;
+    var thread3_stack = [_]usize{0} ** 256;
 
     var thread1 = task.task_create(&hello1, 3, &thread1_stack);
     var thread2 = task.task_create(&hello2, 2, &thread2_stack);
@@ -56,5 +56,6 @@ export fn start() noreturn {
     log_number(task.get_thread_tcb(2).?.priority);
 
     logger.log("Hello world\n");
+    sched.run();
     while (true) {}
 }

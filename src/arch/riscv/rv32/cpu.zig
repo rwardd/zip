@@ -3,39 +3,51 @@ const task = @import("../../../task/task.zig");
 
 const word_size = 4;
 
-fn save_context() void {
+fn save_context(curr_tcb: *task.tcb) void {
     asm volatile (
-        \\ addi sp, sp, -60
-        \\ sw x1,   4(sp)
-        \\ sw x5,   8(sp)
-        \\ sw x6,   12(sp)
-        \\ sw x7,   16(sp)
-        \\ sw x8,   24(sp)
-        \\ sw x9,   28(sp)
-        \\ sw x10,  32(sp)
-        \\ sw x11,  36(sp)
-        \\ sw x12,  40(sp)
-        \\ sw x13,  44(sp)
-        \\ sw x14,  48(sp)
-        \\ sw x15,  52(sp)
-        \\ lw t0, current_tcb
-        \\ sw sp, 0(t0)
-        \\ csrr a0, mcause
-        \\ csrr a1, mepc
-        \\ sw a1, 0 (sp)
+        \\ sw sp,   0(%[curr_tcb])
+        \\ sw s1,   8(%[curr_tcb])
+        \\ sw s2,   12(%[curr_tcb])
+        \\ sw s3,   16(%[curr_tcb])
+        \\ sw s4,   24(%[curr_tcb])
+        \\ sw s5,   28(%[curr_tcb])
+        \\ sw s6,  32(%[curr_tcb])
+        \\ sw s7,  36(%[curr_tcb])
+        \\ sw s8,  40(%[curr_tcb])
+        \\ sw s9,  44(%[curr_tcb])
+        \\ sw s10,  48(%[curr_tcb])
+        \\ sw s11,  52(%[curr_tcb])
+        :
+        : [curr_tcb] "r" (curr_tcb),
+        : "memory"
     );
 }
 
-fn restore_context() void {
+fn restore_context(curr_tcb: *task.tcb) void {
     asm volatile (
-        \\ lw t1, current_tcb
-        \\ lw sp, 0(t1)
-        \\ lw t0, 0 (sp)
+        \\ lw sp,   0(%[curr_tcb])
+        \\ lw ra,   4(%[curr_tcb])
+        \\ lw s1,   8(%[curr_tcb])
+        \\ lw s2,   12(%[curr_tcb])
+        \\ lw s3,   16(%[curr_tcb])
+        \\ lw s4,   24(%[curr_tcb])
+        \\ lw s5,   28(%[curr_tcb])
+        \\ lw s6,  32(%[curr_tcb])
+        \\ lw s7,  36(%[curr_tcb])
+        \\ lw s8,  40(%[curr_tcb])
+        \\ lw s9,  44(%[curr_tcb])
+        \\ lw s10,  48(%[curr_tcb])
+        \\ lw s11,  52(%[curr_tcb])
+        \\ ret
+        :
+        : [curr_tcb] "r" (curr_tcb),
+        : "memory"
     );
 }
 
 pub fn context_switch() void {
     // perform ctx switch here
-    save_context();
+    save_context(&task.current_task.?.control);
     sched.switch_tasks();
+    restore_context(&task.current_task.?.control);
 }
