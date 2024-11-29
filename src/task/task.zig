@@ -17,17 +17,18 @@ pub const task_handle = struct {
     control: tcb,
     tick: ?thread_fn = null,
     next: ?*task_handle = null,
+    regs: [16]usize = [_]usize{0} ** 16,
+    stack: []usize,
 
     pub fn get_tcb(self: *Self) ?*tcb {
         return &self.control;
     }
 };
 
-pub const tcb = struct {
+pub const tcb = packed struct {
     sp: usize = 0,
     ra: usize = 0,
-    regs: [12]usize = [_]usize{0} ** 12,
-    stack: []usize,
+    regs: usize = 0,
     id: u32 = 0,
     priority: u32 = 0,
 };
@@ -68,17 +69,18 @@ pub fn task_init(handle: *task_handle) void {
         head_task = handle;
     }
     handle.control.id = id;
-    handle.control.sp = @intFromPtr(handle.control.stack.ptr);
+    handle.control.sp = @intFromPtr(handle.stack.ptr);
     handle.control.ra = @intFromPtr(handle.tick);
+    handle.control.regs = @intFromPtr(&handle.regs);
 }
 
 pub fn task_create(tick_fn: thread_fn, priority: u32, stack: []usize) task_handle {
     return task_handle{
         .control = tcb{
             .priority = priority,
-            .stack = stack,
             .sp = 0,
         },
         .tick = tick_fn,
+        .stack = stack,
     };
 }

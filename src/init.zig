@@ -4,8 +4,11 @@ const logger = @import("log.zig");
 
 fn hello1(args: ?*anyopaque) void {
     _ = args;
+    var cnt: u32 = 1;
     while (true) {
-        logger.log("Hello from task 1\n");
+        logger.log("Hello from task 1  ");
+        log_number(cnt);
+        cnt += 1;
         sched.yield();
     }
 }

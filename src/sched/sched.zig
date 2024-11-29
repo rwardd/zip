@@ -1,5 +1,6 @@
 // Pre-emptive thread scheduler
 const task = @import("../task/task.zig");
+const logger = @import("../log.zig");
 
 // TODO: find a better way to do this
 const cpu = @import("../arch/riscv/rv32/cpu.zig");
@@ -7,6 +8,7 @@ const cpu = @import("../arch/riscv/rv32/cpu.zig");
 fn idle_tick(args: ?*anyopaque) void {
     _ = args;
     while (true) {
+        logger.log("Hello from idle task\n");
         yield();
     }
 }
@@ -49,10 +51,13 @@ pub fn run() void {
     var idle_task = create_idle_task(&idle_stack);
 
     idle_task.control.id = 32;
-    idle_task.control.sp = @intFromPtr(idle_task.control.stack.ptr);
+    idle_task.control.sp = @intFromPtr(idle_task.stack.ptr);
     idle_task.control.ra = @intFromPtr(idle_task.tick);
+    idle_task.control.regs = @intFromPtr(&idle_task.regs);
     idle_task.next = task.head_task;
     task.head_task = &idle_task;
+
+    task.current_task = task.head_task;
     cpu.context_switch();
 }
 
