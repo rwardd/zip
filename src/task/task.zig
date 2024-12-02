@@ -17,7 +17,6 @@ pub const task_handle = struct {
     control: tcb,
     tick: ?thread_fn = null,
     next: ?*task_handle = null,
-    regs: [16]usize = [_]usize{0} ** 16,
     stack: []usize,
 
     pub fn get_tcb(self: *Self) ?*tcb {
@@ -28,7 +27,17 @@ pub const task_handle = struct {
 pub const tcb = packed struct {
     sp: usize = 0,
     ra: usize = 0,
-    regs: usize = 0,
+    s1: usize = 0,
+    s2: usize = 0,
+    s3: usize = 0,
+    s4: usize = 0,
+    s5: usize = 0,
+    s6: usize = 0,
+    s7: usize = 0,
+    s8: usize = 0,
+    s9: usize = 0,
+    s10: usize = 0,
+    s11: usize = 0,
     id: u32 = 0,
     priority: u32 = 0,
 };
@@ -71,7 +80,6 @@ pub fn task_init(handle: *task_handle) void {
     handle.control.id = id;
     handle.control.sp = @intFromPtr(handle.stack.ptr);
     handle.control.ra = @intFromPtr(handle.tick);
-    handle.control.regs = @intFromPtr(&handle.regs);
 }
 
 pub fn task_create(tick_fn: thread_fn, priority: u32, stack: []usize) linksection(".stacks") task_handle {

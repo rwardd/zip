@@ -4,7 +4,7 @@ const logger = @import("log.zig");
 
 fn hello1(args: ?*anyopaque) void {
     _ = args;
-    var cnt: u32 = 1;
+    var cnt: u8 = 1;
     while (true) {
         logger.log("Hello from task 1  ");
         log_number(cnt);
