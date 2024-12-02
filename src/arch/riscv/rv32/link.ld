@@ -16,6 +16,10 @@ SECTIONS
         *(.text);
     }
 
+	.stacks : ALIGN(4K) {
+		*(.stacks)
+	}
+
     .rodata : ALIGN(4K) {
         *(.rodata);
     }

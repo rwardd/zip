@@ -74,7 +74,7 @@ pub fn task_init(handle: *task_handle) void {
     handle.control.regs = @intFromPtr(&handle.regs);
 }
 
-pub fn task_create(tick_fn: thread_fn, priority: u32, stack: []usize) task_handle {
+pub fn task_create(tick_fn: thread_fn, priority: u32, stack: []usize) linksection(".stacks") task_handle {
     return task_handle{
         .control = tcb{
             .priority = priority,
