@@ -1,17 +1,12 @@
 const logger = @import("../log.zig");
-const std = @import("std");
 
 // TODO: properly implement this
 pub const thread_fn = *const fn (args: ?*anyopaque) void;
-
 pub var current_task: ?*task_handle = null;
 pub var head_task: ?*task_handle = null;
 pub var tail_task: ?*task_handle = null;
 export var current_tcb: ?*tcb = null;
 
-/// More stuff to go in here:
-///     - tick fn
-///     - stack addr
 pub const task_handle = struct {
     const Self = @This();
     control: tcb,

@@ -6,6 +6,7 @@ const Feature = std.Target.Cpu.Feature;
 pub fn build(b: *std.Build) void {
     const debug = b.option(bool, "debug", "Run qemu in debug mode") orelse false;
     const features = Target.riscv.Feature;
+    const optimize = b.standardOptimizeOption(.{});
     var disabled_features = Feature.Set.empty;
     var enabled_features = Feature.Set.empty;
 
@@ -29,6 +30,7 @@ pub fn build(b: *std.Build) void {
         .target = b.resolveTargetQuery(target),
         .name = "rvzg",
         .root_source_file = b.path("src/init.zig"),
+        .optimize = optimize,
     });
 
     exe.addAssemblyFile(b.path("src/arch/riscv/rv32/_start.S"));
