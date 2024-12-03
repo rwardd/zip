@@ -1,5 +1,6 @@
 // Pre-emptive thread scheduler
 const task = @import("../task/task.zig");
+const logger = @import("../log.zig");
 
 // TODO: find a better way to do this
 const cpu = @import("../arch/riscv/rv32/cpu.zig");
@@ -7,11 +8,22 @@ const cpu = @import("../arch/riscv/rv32/cpu.zig");
 fn idle_tick(args: ?*anyopaque) void {
     _ = args;
     while (true) {
+        logger.log("Hello from idle task\n");
         yield();
     }
 }
 
-pub fn switch_tasks() void {
+pub inline fn save_sp() void {
+    asm volatile (
+        \\sw sp, 0(%[curr_tcb])
+        \\sw s0, 8(%[curr_tcb])
+        :
+        : [curr_tcb] "r" (&task.current_task.?.control),
+        : "memory"
+    );
+}
+
+pub fn switch_tasks() struct { old: ?*task.task_handle, new: ?*task.task_handle } {
     const old_head = task.head_task;
     task.head_task = task.head_task.?.next;
     var tmp: ?*task.task_handle = task.head_task;
@@ -26,17 +38,10 @@ pub fn switch_tasks() void {
     old_head.?.next = null;
     tmp.?.next = old_head;
     task.current_task = task.head_task;
+    return .{ .old = old_head, .new = task.current_task };
 }
 
 pub fn yield() void {
-    // immediately save return address. This is pretty bad though so find better
-    // way
-    asm volatile (
-        \\sw ra, 4(%[curr_tcb])
-        :
-        : [curr_tcb] "r" (&task.current_task.?.control),
-        : "memory"
-    );
     cpu.context_switch();
 }
 
@@ -45,15 +50,8 @@ fn create_idle_task(stack: []usize) task.task_handle {
 }
 
 pub fn run() void {
-    var idle_stack = [_]usize{0} ** 256;
-    var idle_task = create_idle_task(&idle_stack);
-
-    idle_task.control.id = 32;
-    idle_task.control.sp = @intFromPtr(idle_task.control.stack.ptr);
-    idle_task.control.ra = @intFromPtr(idle_task.tick);
-    idle_task.next = task.head_task;
-    task.head_task = &idle_task;
-    cpu.context_switch();
+    task.current_task = task.head_task;
+    cpu.exec_first_task(&task.current_task.?.control);
 }
 
 const scheduler = struct {
