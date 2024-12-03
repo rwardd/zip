@@ -17,7 +17,7 @@ pub const task_handle = struct {
     control: tcb,
     tick: ?thread_fn = null,
     next: ?*task_handle = null,
-    stack: []usize,
+    stack: []u8,
 
     pub fn get_tcb(self: *Self) ?*tcb {
         return &self.control;
@@ -78,11 +78,11 @@ pub fn task_init(handle: *task_handle) void {
         head_task = handle;
     }
     handle.control.id = id;
-    handle.control.sp = @intFromPtr(handle.stack.ptr);
+    handle.control.sp = @intFromPtr(handle.stack.ptr) + handle.stack.len;
     handle.control.ra = @intFromPtr(handle.tick);
 }
 
-pub fn task_create(tick_fn: thread_fn, priority: u32, stack: []usize) linksection(".stacks") task_handle {
+pub fn task_create(tick_fn: thread_fn, priority: u32, stack: []u8) task_handle {
     return task_handle{
         .control = tcb{
             .priority = priority,

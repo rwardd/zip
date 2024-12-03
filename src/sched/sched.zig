@@ -13,7 +13,7 @@ fn idle_tick(args: ?*anyopaque) void {
     }
 }
 
-pub fn switch_tasks() struct { old: ?*task.task_handle, new: ?*task.task_handle } {
+pub inline fn switch_tasks() struct { old: ?*task.task_handle, new: ?*task.task_handle } {
     const old_head = task.head_task;
     task.head_task = task.head_task.?.next;
     var tmp: ?*task.task_handle = task.head_task;
@@ -34,12 +34,12 @@ pub fn switch_tasks() struct { old: ?*task.task_handle, new: ?*task.task_handle 
 pub fn yield() void {
     // immediately save return address. This is pretty bad though so find better
     // way
-    asm volatile (
-        \\sw ra, 4(%[curr_tcb])
-        :
-        : [curr_tcb] "r" (&task.current_task.?.control),
-        : "memory"
-    );
+    //asm volatile (
+    //    \\sw ra, 4(%[curr_tcb])
+    //    :
+    //    : [curr_tcb] "r" (&task.current_task.?.control),
+    //    : "memory"
+    //);
     cpu.context_switch();
 }
 
@@ -58,7 +58,7 @@ pub fn run() void {
     //task.head_task = &idle_task;
 
     task.current_task = task.head_task;
-    cpu.context_switch();
+    cpu.exec_first_task(&task.current_task.?.control);
 }
 
 const scheduler = struct {

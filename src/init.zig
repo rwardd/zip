@@ -4,10 +4,10 @@ const logger = @import("log.zig");
 
 fn hello1(args: ?*anyopaque) void {
     _ = args;
-    var cnt: u8 = 1;
+    var cnt: u32 = 1;
     while (true) {
         logger.log("Hello from task 1  ");
-        log_number(cnt);
+        //log_number(cnt);
         cnt += 1;
         sched.yield();
     }
@@ -42,9 +42,9 @@ export fn start() noreturn {
     // Not a fan of just keeping them here on the start stack
     // Should be defined in memory region ???
 
-    var thread1_stack = [_]usize{0} ** 256;
-    var thread2_stack = [_]usize{0} ** 256;
-    var thread3_stack = [_]usize{0} ** 256;
+    var thread1_stack = [_]u8{0} ** 256;
+    var thread2_stack = [_]u8{0} ** 256;
+    var thread3_stack = [_]u8{0} ** 256;
 
     var thread1 = task.task_create(&hello1, 3, &thread1_stack);
     var thread2 = task.task_create(&hello2, 2, &thread2_stack);
