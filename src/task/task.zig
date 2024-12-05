@@ -1,11 +1,11 @@
 const logger = @import("../log.zig");
+const std = @import("std");
 
 // TODO: properly implement this
 pub const thread_fn = *const fn (args: ?*anyopaque) void;
 pub var current_task: ?*task_handle = null;
 pub var head_task: ?*task_handle = null;
 pub var tail_task: ?*task_handle = null;
-export var current_tcb: ?*tcb = null;
 
 pub const task_handle = struct {
     const Self = @This();
@@ -62,7 +62,7 @@ pub fn get_thread_tcb(id: u32) ?*tcb {
     return &current.?.control;
 }
 
-pub fn task_init(handle: *task_handle) void {
+pub fn init(handle: *task_handle) void {
     var id: u32 = 0;
     if (current_task) |curr| {
         curr.next = handle;
@@ -77,7 +77,11 @@ pub fn task_init(handle: *task_handle) void {
     handle.control.ra = @intFromPtr(handle.tick);
 }
 
-pub fn task_create(tick_fn: thread_fn, priority: u32, stack: []u8) task_handle {
+pub fn create_stack(comptime stack_size: u32) [stack_size]u8 {
+    return [_]u8{0} ** stack_size;
+}
+
+pub fn create(tick_fn: thread_fn, priority: u32, stack: []u8) task_handle {
     return task_handle{
         .control = tcb{
             .priority = priority,
