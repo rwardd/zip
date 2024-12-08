@@ -3,7 +3,7 @@
 .global zvt
 zvt:
 irq0:
-     j rv32_eh
+     j rv32_exception_handler
 irq1:
      j rv32_isr
 irq2:

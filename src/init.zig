@@ -57,16 +57,30 @@ export fn rv32_isr() void {
     logger.log("hello from irq\n");
 }
 
-extern fn zvt() void;
 export fn start() noreturn {
-    asm volatile (
-        \\csrw mtvec, %[zvt]
-        :
-        : [zvt] "r" (zvt),
-    );
+    //asm volatile (
+    //    \\csrw mtvec, %[zvt]
+    //    :
+    //    : [zvt] "r" (zvt),
+    //);
+
+    //asm volatile (
+    //    \\ csrr t0, mstatus
+    //    \\ andi t0, t0, ~0x8
+    //    \\ addi t1, x0, 0x188
+    //    \\ slli t1, t1, 4
+    //    \\ or t0, t0, t1
+    //    \\ lw x5, mstatus
+    //    \\ addi x5, x5, 0x08
+    //    \\ csrrw x0, mstatus, x5
+    //);
+
+    //asm volatile (
+    //    \\ csrs mstatus, 8
+    //);
 
     asm volatile (
-        \\ecall
+        \\ ecall
     );
     var thread1 = task.create(&hello1, 3, &thread1_stack);
     var thread2 = task.create(&hello2, 2, &thread2_stack);
