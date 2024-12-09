@@ -41,7 +41,10 @@ pub fn switch_tasks() struct { old: ?*task.task_handle, new: ?*task.task_handle 
     return .{ .old = old_head, .new = task.current_task };
 }
 
+export var current_tcb: ?*task.tcb = null;
+
 pub inline fn yield() void {
+    current_tcb = &task.current_task.?.control;
     asm volatile (
         \\ ecall
     );
