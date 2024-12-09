@@ -13,18 +13,13 @@ clear_bss:
 
 entrypoint:
     la t0, zvt
+
+	// Shift this to run_sched
     csrw mtvec, t0
     li t1, 0x800
     csrw mie, t1
     li t1, 0x8
     csrw mstatus, t1
-    //csrr t0, mstatus
-    //andi t0, t0, ~0x8 
-    //addi t1, x0, 0x188 
-    //slli t1, t1, 4
-    //or t0, t0, t1 
-    //addi x5, t0, 0x08
-    //csrrw x0, mstatus, x5 
     tail    start
 
 /* Loop */

@@ -7,7 +7,6 @@ fn hello1(args: ?*anyopaque) void {
         logger.log("Hello from task 1 ");
         log_number(cnt);
         cnt = (cnt + 1) % 0x70; // loop back round without overflowing u8
-        sched.save_sp();
         sched.yield();
     }
     _ = args;
@@ -17,7 +16,6 @@ fn hello2(args: ?*anyopaque) void {
     _ = args;
     while (true) {
         logger.log("Hello from task 2\n");
-        sched.save_sp();
         sched.yield();
     }
 }
@@ -26,7 +24,6 @@ fn hello3(args: ?*anyopaque) void {
     _ = args;
     while (true) {
         logger.log("Hello from task 3\n");
-        sched.save_sp();
         sched.yield();
     }
 }
@@ -44,7 +41,7 @@ var thread1_stack = task.create_stack(256); //[_]u8{0} ** 256;
 var thread2_stack = task.create_stack(256); //[_]u8{0} ** 256;
 var thread3_stack = task.create_stack(256); //[_]u8{0} ** 256;
 var isr_stack = task.create_stack(256);
-export var isr_sp: usize = 0; //@intFromPtr(&isr_stack) + isr_stack.len;
+export var isr_sp: usize = 0;
 
 export fn test_irq() void {
     logger.log("hello from irq\n");
@@ -59,9 +56,7 @@ export fn rv32_isr() void {
 }
 
 export fn start() noreturn {
-    //asm volatile (
-    //    \\ ecall
-    //);
+    // Not sure if there is a better way to do this
     isr_sp = @intFromPtr(&isr_stack) + isr_stack.len;
     var thread1 = task.create(&hello1, 3, &thread1_stack);
     var thread2 = task.create(&hello2, 2, &thread2_stack);

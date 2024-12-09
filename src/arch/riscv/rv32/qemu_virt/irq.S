@@ -1,5 +1,6 @@
 .global rv32_exception_handler
 .extern current_tcb
+.extern isr_sp
 
 .macro save_context
 	lw x17,  current_tcb

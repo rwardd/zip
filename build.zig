@@ -23,7 +23,7 @@ pub fn build(b: *std.Build) void {
         .cpu_arch = Target.Cpu.Arch.riscv32,
         .os_tag = Target.Os.Tag.freestanding,
         .abi = Target.Abi.none,
-        .cpu_model = .{ .explicit = &std.Target.riscv.cpu.sifive_e21 },
+        .cpu_model = .{ .explicit = &std.Target.riscv.cpu.baseline_rv32 },
     };
 
     const exe = b.addExecutable(.{
@@ -33,9 +33,8 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
-    exe.addCSourceFile(.{ .file = b.path("src/arch/riscv/rv32/_start.S") });
+    exe.addAssemblyFile(b.path("src/arch/riscv/rv32/_start.S"));
     exe.addAssemblyFile(b.path("src/arch/riscv/rv32/qemu_virt/irq.S"));
-
     exe.addAssemblyFile(b.path("src/arch/riscv/rv32/qemu_virt/vector.S"));
     exe.setLinkerScriptPath(b.path("src/arch/riscv/rv32/link.ld"));
 
