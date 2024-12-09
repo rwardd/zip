@@ -25,9 +25,11 @@ pub fn exec_first_task(current: *task.tcb) void {
     );
 }
 
-inline fn save_context(old_tcb: *task.tcb) void {
+inline fn save_context() void {
     asm volatile (
+        \\ sw sp,   0(%[old_tcb])
         \\ sw ra,   4(%[old_tcb])
+        \\ sw s0,   8(%[old_tcb])
         \\ sw s1,   12(%[old_tcb])
         \\ sw s2,   16(%[old_tcb])
         \\ sw s3,   20(%[old_tcb])
@@ -39,7 +41,7 @@ inline fn save_context(old_tcb: *task.tcb) void {
         \\ sw s9,   44(%[old_tcb])
         \\ sw s10,  48(%[old_tcb])
         :
-        : [old_tcb] "{x17}" (old_tcb),
+        : [old_tcb] "{x17}" (&task.current_task.?.control),
         : "memory"
     );
 }
@@ -47,7 +49,8 @@ inline fn save_context(old_tcb: *task.tcb) void {
 inline fn restore_context(curr_tcb: *task.tcb) void {
     asm volatile (
         \\ lw sp,   0(%[curr_tcb])
-        \\ lw ra,   4(%[curr_tcb])
+        \\ lw t0,   4(%[curr_tcb])
+        \\ csrw mepc, t0 
         \\ lw s0,   8(%[curr_tcb])
         \\ lw s1,   12(%[curr_tcb])
         \\ lw s2,   16(%[curr_tcb])
@@ -59,15 +62,14 @@ inline fn restore_context(curr_tcb: *task.tcb) void {
         \\ lw s8,   44(%[curr_tcb])
         \\ lw s9,   48(%[curr_tcb])
         \\ lw s10,  52(%[curr_tcb])
-        \\ ret
+        \\ mret
         :
         : [curr_tcb] "{x17}" (curr_tcb),
         : "memory"
     );
 }
 
-pub inline fn context_switch() void {
-    save_context(&task.current_task.?.control);
+export fn context_switch() void {
     const tasks = sched.switch_tasks();
     restore_context(&tasks.new.?.control);
 }

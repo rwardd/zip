@@ -14,13 +14,13 @@ fn idle_tick(args: ?*anyopaque) void {
 }
 
 pub inline fn save_sp() void {
-    asm volatile (
-        \\sw sp, 0(%[curr_tcb])
-        \\sw s0, 8(%[curr_tcb])
-        :
-        : [curr_tcb] "r" (&task.current_task.?.control),
-        : "memory"
-    );
+    //asm volatile (
+    //    \\sw sp, 0(%[curr_tcb])
+    //    \\sw s0, 8(%[curr_tcb])
+    //    :
+    //    : [curr_tcb] "r" (&task.current_task.?.control),
+    //    : "memory"
+    //);
 }
 
 pub fn switch_tasks() struct { old: ?*task.task_handle, new: ?*task.task_handle } {
@@ -41,8 +41,11 @@ pub fn switch_tasks() struct { old: ?*task.task_handle, new: ?*task.task_handle 
     return .{ .old = old_head, .new = task.current_task };
 }
 
-pub fn yield() void {
-    cpu.context_switch();
+pub inline fn yield() void {
+    asm volatile (
+        \\ ecall
+    );
+    //cpu.context_switch();
 }
 
 fn create_idle_task(stack: []usize) task.task_handle {

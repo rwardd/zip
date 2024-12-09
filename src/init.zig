@@ -1,7 +1,6 @@
 const task = @import("task/task.zig");
 const sched = @import("sched/sched.zig");
 const logger = @import("log.zig");
-
 fn hello1(args: ?*anyopaque) void {
     var cnt: u32 = 1;
     while (true) {
@@ -44,6 +43,8 @@ fn log_number(x: u32) void {
 var thread1_stack = task.create_stack(256); //[_]u8{0} ** 256;
 var thread2_stack = task.create_stack(256); //[_]u8{0} ** 256;
 var thread3_stack = task.create_stack(256); //[_]u8{0} ** 256;
+var isr_stack = task.create_stack(256);
+export var isr_sp: usize = 0; //@intFromPtr(&isr_stack) + isr_stack.len;
 
 export fn test_irq() void {
     logger.log("hello from irq\n");
@@ -59,29 +60,9 @@ export fn rv32_isr() void {
 
 export fn start() noreturn {
     //asm volatile (
-    //    \\csrw mtvec, %[zvt]
-    //    :
-    //    : [zvt] "r" (zvt),
+    //    \\ ecall
     //);
-
-    //asm volatile (
-    //    \\ csrr t0, mstatus
-    //    \\ andi t0, t0, ~0x8
-    //    \\ addi t1, x0, 0x188
-    //    \\ slli t1, t1, 4
-    //    \\ or t0, t0, t1
-    //    \\ lw x5, mstatus
-    //    \\ addi x5, x5, 0x08
-    //    \\ csrrw x0, mstatus, x5
-    //);
-
-    //asm volatile (
-    //    \\ csrs mstatus, 8
-    //);
-
-    asm volatile (
-        \\ ecall
-    );
+    isr_sp = @intFromPtr(&isr_stack) + isr_stack.len;
     var thread1 = task.create(&hello1, 3, &thread1_stack);
     var thread2 = task.create(&hello2, 2, &thread2_stack);
     var thread3 = task.create(&hello3, 1, &thread3_stack);
