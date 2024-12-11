@@ -55,6 +55,13 @@ export fn rv32_isr() void {
     logger.log("hello from irq\n");
 }
 
+fn test_seg(shit_value: usize) void {
+    asm volatile (
+        \\ lw x11, 0(%[shit_value])
+        :
+        : [shit_value] "{x10}" (shit_value),
+    );
+}
 export fn start() noreturn {
     // Not sure if there is a better way to do this
     isr_sp = @intFromPtr(&isr_stack) + isr_stack.len;
@@ -71,6 +78,7 @@ export fn start() noreturn {
     log_number(task.get_thread_tcb(2).?.priority);
 
     logger.log("Hello world\n");
+    test_seg(0);
     sched.run();
     while (true) {}
 }

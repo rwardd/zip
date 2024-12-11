@@ -23,8 +23,14 @@
 rv32_exception_handler:
     save_context
     csrr a0, mcause
+	li t0, 11
+	bne a0, t0, not_ecall
     csrr a1, mepc
     addi a1, a1, 4
     sw a1, 4(x17)
     lw sp, isr_sp
     call context_switch
+
+not_ecall:
+	li t0, 7
+	beq a0, t0, hardfault_handler

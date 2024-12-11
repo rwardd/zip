@@ -49,6 +49,11 @@ pub fn run() void {
     cpu.exec_first_task(&task.current_task.?.control);
 }
 
+export fn hardfault_handler() noreturn {
+    // Loop here
+    while (true) {}
+}
+
 const scheduler = struct {
     const t = task.head_task;
 };
