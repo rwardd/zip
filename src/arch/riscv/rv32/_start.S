@@ -16,11 +16,9 @@ entrypoint:
 
 	// Shift this to run_sched
     csrw mtvec, t0
-    li t1, 0x800
-    csrw mie, t1
-    li t1, 0x8
+    li t1, 0x08
     csrw mstatus, t1
-    tail    start
+    tail  start
 
 /* Loop */
 wait_interrupt:
