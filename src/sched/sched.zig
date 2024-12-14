@@ -5,6 +5,10 @@ const logger = @import("../log.zig");
 // TODO: find a better way to do this
 const cpu = @import("../arch/riscv/rv32/cpu.zig");
 
+var isr_stack = task.create_stack(256);
+export var isr_sp: usize = 0;
+export var current_tcb: ?*task.tcb = null;
+
 fn idle_tick(args: ?*anyopaque) void {
     _ = args;
     while (true) {
@@ -31,8 +35,6 @@ pub fn switch_tasks() struct { old: ?*task.task_handle, new: ?*task.task_handle 
     return .{ .old = old_head, .new = task.current_task };
 }
 
-export var current_tcb: ?*task.tcb = null;
-
 pub inline fn yield() void {
     current_tcb = &task.current_task.?.control;
     asm volatile (
@@ -45,6 +47,7 @@ fn create_idle_task(stack: []usize) task.task_handle {
 }
 
 pub fn run() void {
+    isr_sp = @intFromPtr(&isr_stack) + isr_stack.len;
     task.current_task = task.head_task;
     cpu.exec_first_task(&task.current_task.?.control);
 }

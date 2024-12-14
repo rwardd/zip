@@ -1,4 +1,6 @@
 .global rv32_exception_handler
+.global rv32_isr
+
 .extern current_tcb
 .extern isr_sp
 
@@ -22,8 +24,8 @@
 
 rv32_exception_handler:
     csrr a0, mcause
-	li t0, 11
-	bne a0, t0, not_ecall
+    li t0, 11
+    bne a0, t0, exception
     save_context
     csrr a1, mepc
     addi a1, a1, 4
@@ -31,6 +33,10 @@ rv32_exception_handler:
     lw sp, isr_sp
     call context_switch
 
-not_ecall:
+exception:
 	li t0, 5 /* hard fault */
 	beq a0, t0, hardfault_handler
+
+rv32_isr:
+    j rv32_isr
+
