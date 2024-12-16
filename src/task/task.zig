@@ -1,6 +1,8 @@
 const logger = @import("../log.zig");
 const std = @import("std");
 
+const arch = @import("arch");
+pub const tcb = arch.tcb;
 // TODO: properly implement this
 pub const thread_fn = *const fn (args: ?*anyopaque) void;
 pub var current_task: ?*task_handle = null;
@@ -17,24 +19,6 @@ pub const task_handle = struct {
     pub fn get_tcb(self: *Self) ?*tcb {
         return &self.control;
     }
-};
-
-pub const tcb = packed struct {
-    sp: usize = 0,
-    ra: usize = 0,
-    s1: usize = 0,
-    s2: usize = 0,
-    s3: usize = 0,
-    s4: usize = 0,
-    s5: usize = 0,
-    s6: usize = 0,
-    s7: usize = 0,
-    s8: usize = 0,
-    s9: usize = 0,
-    s10: usize = 0,
-    s11: usize = 0,
-    id: u32 = 0,
-    priority: u32 = 0,
 };
 
 pub fn get_thread_id() u32 {
