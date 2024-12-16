@@ -1,30 +1,42 @@
 .global rv32_exception_handler
+.global rv32_isr
+
 .extern current_tcb
 .extern isr_sp
 
 .macro save_context
-	lw x17,  current_tcb
-	sw sp,   0(x17)
-	sw ra,   4(x17)
-	sw s0,   8(x17)
-	sw s1,   12(x17)
-	sw s2,   16(x17)
-	sw s3,   20(x17)
-	sw s4,   24(x17)
-	sw s5,   28(x17)
-	sw s6,   32(x17)
-	sw s7,   36(x17)
-	sw s8,   40(x17)
-	sw s9,   44(x17)
-	sw s10,  48(x17)
+	lw t0,  current_tcb
+	sw sp,   0(t0)
+	sw x1,   4(t0)
+	sw x5,   8(t0)
+	sw x6,   12(t0)
+	sw x7,   16(t0)
+	sw x8,   20(t0)
+	sw x9,   24(t0)
+	sw x10,  28(t0)
+	sw x11,  32(t0)
+	sw x12,  36(t0)
+	sw x13,  40(t0)
+	sw x14,  44(t0)
+	sw x15,  48(t0)
 .endm
 
 
 rv32_exception_handler:
-    save_context
     csrr a0, mcause
+    li t0, 11
+    bne a0, t0, exception
+    save_context
     csrr a1, mepc
     addi a1, a1, 4
     sw a1, 4(x17)
     lw sp, isr_sp
     call context_switch
+
+exception:
+	li t0, 5 /* hard fault */
+	beq a0, t0, hardfault_handler
+
+rv32_isr:
+    j rv32_isr
+

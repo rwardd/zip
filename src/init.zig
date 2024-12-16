@@ -40,24 +40,9 @@ fn log_number(x: u32) void {
 var thread1_stack = task.create_stack(256); //[_]u8{0} ** 256;
 var thread2_stack = task.create_stack(256); //[_]u8{0} ** 256;
 var thread3_stack = task.create_stack(256); //[_]u8{0} ** 256;
-var isr_stack = task.create_stack(256);
-export var isr_sp: usize = 0;
-
-export fn test_irq() void {
-    logger.log("hello from irq\n");
-}
-
-export fn rv32_eh() void {
-    logger.log("hello from eh\n");
-}
-
-export fn rv32_isr() void {
-    logger.log("hello from irq\n");
-}
 
 export fn start() noreturn {
     // Not sure if there is a better way to do this
-    isr_sp = @intFromPtr(&isr_stack) + isr_stack.len;
     var thread1 = task.create(&hello1, 3, &thread1_stack);
     var thread2 = task.create(&hello2, 2, &thread2_stack);
     var thread3 = task.create(&hello3, 1, &thread3_stack);
