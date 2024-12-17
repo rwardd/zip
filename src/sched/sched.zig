@@ -1,9 +1,7 @@
 // Pre-emptive thread scheduler
 const task = @import("../task/task.zig");
 const logger = @import("../log.zig");
-
-// TODO: find a better way to do this
-const cpu = @import("../arch/riscv/rv32/cpu.zig");
+const cpu = @import("../cpu/cpu.zig");
 
 var isr_stack = task.create_stack(256);
 export var isr_sp: usize = 0;

@@ -1,9 +1,26 @@
-const sched = @import("../../../sched/sched.zig");
-const task = @import("../../../task/task.zig");
-
 const word_size = 4;
 
-pub fn exec_first_task(current: *task.tcb) void {
+pub const tcb = packed struct {
+    sp: usize = 0,
+    ra: usize = 0,
+    s1: usize = 0,
+    s2: usize = 0,
+    s3: usize = 0,
+    s4: usize = 0,
+    s5: usize = 0,
+    s6: usize = 0,
+    s7: usize = 0,
+    s8: usize = 0,
+    s9: usize = 0,
+    s10: usize = 0,
+    s11: usize = 0,
+    id: u32 = 0,
+    priority: u32 = 0,
+};
+
+pub inline fn save_context() void {}
+
+pub fn exec_first_task(current: *tcb) void {
     asm volatile (
         \\ lw sp,   0(%[new_tcb])
         \\ lw ra,   4(%[new_tcb])
@@ -25,28 +42,7 @@ pub fn exec_first_task(current: *task.tcb) void {
     );
 }
 
-inline fn save_context() void {
-    asm volatile (
-        \\ sw sp,   0(%[old_tcb])
-        \\ sw ra,   4(%[old_tcb])
-        \\ sw s0,   8(%[old_tcb])
-        \\ sw s1,   12(%[old_tcb])
-        \\ sw s2,   16(%[old_tcb])
-        \\ sw s3,   20(%[old_tcb])
-        \\ sw s4,   24(%[old_tcb])
-        \\ sw s5,   28(%[old_tcb])
-        \\ sw s6,   32(%[old_tcb])
-        \\ sw s7,   36(%[old_tcb])
-        \\ sw s8,   40(%[old_tcb])
-        \\ sw s9,   44(%[old_tcb])
-        \\ sw s10,  48(%[old_tcb])
-        :
-        : [old_tcb] "{x17}" (&task.current_task.?.control),
-        : "memory"
-    );
-}
-
-inline fn restore_context(curr_tcb: *task.tcb) void {
+pub inline fn restore_context(curr_tcb: *tcb) void {
     asm volatile (
         \\ lw sp,   0(%[curr_tcb])
         \\ lw t0,   4(%[curr_tcb])
@@ -67,9 +63,4 @@ inline fn restore_context(curr_tcb: *task.tcb) void {
         : [curr_tcb] "{x17}" (curr_tcb),
         : "memory"
     );
-}
-
-export fn context_switch() void {
-    const tasks = sched.switch_tasks();
-    restore_context(&tasks.new.?.control);
 }
