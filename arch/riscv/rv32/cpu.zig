@@ -18,6 +18,12 @@ pub const tcb = packed struct {
     priority: u32 = 0,
 };
 
+pub inline fn yield() void {
+    asm volatile (
+        \\ ecall
+    );
+}
+
 pub inline fn save_context() void {}
 
 pub fn exec_first_task(current: *tcb) void {

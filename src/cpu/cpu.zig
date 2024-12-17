@@ -18,6 +18,10 @@ inline fn restore_context(curr_tcb: *tcb) void {
     arch.restore_context(curr_tcb);
 }
 
+pub inline fn yield() void {
+    arch.yield();
+}
+
 export fn context_switch() void {
     const tasks = sched.switch_tasks();
     restore_context(&tasks.new.?.control);
