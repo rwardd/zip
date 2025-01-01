@@ -5,36 +5,18 @@ const Feature = std.Target.Cpu.Feature;
 
 pub fn build(b: *std.Build) void {
     const debug = b.option(bool, "debug", "Run qemu in debug mode") orelse false;
+
     const arch_opt = b.option([]const u8, "architecture", "The target architecture") orelse "rv32";
     const arch = std.meta.stringToEnum(Arch, arch_opt).?;
+    const platform_opt = b.option([]const u8, "platform", "The target platform") orelse "qemu_virt";
+    const platform = std.meta.stringToEnum(Platform, platform_opt).?;
 
-    const board = b.option([]const u8, "board", "The target board") orelse "qemu";
-    _ = board;
-
-    const features = Target.riscv.Feature;
     const optimize = b.standardOptimizeOption(.{});
-    var disabled_features = Feature.Set.empty;
-    var enabled_features = Feature.Set.empty;
-
-    disabled_features.addFeature(@intFromEnum(features.d));
-    disabled_features.addFeature(@intFromEnum(features.e));
-    disabled_features.addFeature(@intFromEnum(features.f));
-
-    enabled_features.addFeature(@intFromEnum(features.a));
-    enabled_features.addFeature(@intFromEnum(features.zicsr));
-    enabled_features.addFeature(@intFromEnum(features.m));
-    enabled_features.addFeature(@intFromEnum(features.c));
-
-    const target = std.Target.Query{
-        .cpu_arch = Target.Cpu.Arch.riscv32,
-        .os_tag = Target.Os.Tag.freestanding,
-        .abi = Target.Abi.none,
-        .cpu_model = .{ .explicit = &std.Target.riscv.cpu.baseline_rv32 },
-    };
+    const target = select_target(arch);
 
     const exe = b.addExecutable(.{
         .target = b.resolveTargetQuery(target),
-        .name = "rvzg",
+        .name = "zip",
         .root_source_file = b.path("src/init.zig"),
         .optimize = optimize,
     });
@@ -44,18 +26,8 @@ pub fn build(b: *std.Build) void {
     initialise_architecture(arch, b, exe);
     b.installArtifact(exe);
 
-    const qemu_args = .{
-        "qemu-system-riscv32",
-        "-machine",
-        "virt",
-        "-bios",
-        "none",
-        "-kernel",
-        "zig-out/bin/rvzg",
-        "-nographic",
-    };
-
-    const qemu = b.addSystemCommand(&qemu_args);
+    const qemu_args = qemu_config(arch, platform);
+    const qemu = b.addSystemCommand(qemu_args);
 
     if (debug) {
         qemu.addArg("-s");
@@ -64,24 +36,36 @@ pub fn build(b: *std.Build) void {
 
     qemu.step.dependOn(b.default_step);
     const run_step = b.step("run", "Start qemu");
-
     run_step.dependOn(&qemu.step);
 }
+
+const Arch = enum(u32) { rv32, arm_cortex_m0 };
+const Platform = enum(u32) { qemu_virt };
 
 const architecture = struct {
     id: Arch,
     path: []const u8,
 };
-
-const Arch = enum(u32) { rv32, arm_cortex_m0 };
 const arch_lookup = [_]architecture{architecture{ .id = Arch.rv32, .path = "arch/riscv/rv32/cpu.zig" }};
 
 fn get_arch_path(arch: Arch) []const u8 {
-    if (arch == Arch.rv32) {
-        return arch_lookup[0].path;
-    }
+    return arch_lookup[@intFromEnum(arch)].path;
+}
 
-    return "Not found";
+fn select_target(arch: Arch) std.Target.Query {
+    switch (arch) {
+        Arch.rv32 => {
+            return std.Target.Query{
+                .cpu_arch = Target.Cpu.Arch.riscv32,
+                .os_tag = Target.Os.Tag.freestanding,
+                .abi = Target.Abi.none,
+                .cpu_model = .{ .explicit = &std.Target.riscv.cpu.baseline_rv32 },
+            };
+        },
+        else => {
+            return std.Target.Query{};
+        },
+    }
 }
 
 fn initialise_architecture(arch: Arch, b: *std.Build, exe: *std.Build.Step.Compile) void {
@@ -93,5 +77,29 @@ fn initialise_architecture(arch: Arch, b: *std.Build, exe: *std.Build.Step.Compi
             exe.setLinkerScriptPath(b.path("arch/riscv/rv32/link.ld"));
         },
         else => {},
+    }
+}
+
+fn qemu_config(arch: Arch, board: Platform) []const []const u8 {
+    switch (arch) {
+        Arch.rv32 => {
+            switch (board) {
+                Platform.qemu_virt => {
+                    return &[_][]const u8{
+                        "qemu-system-riscv32",
+                        "-machine",
+                        "virt",
+                        "-bios",
+                        "none",
+                        "-kernel",
+                        "zig-out/bin/zip",
+                        "-nographic",
+                    };
+                },
+            }
+        },
+        else => {
+            return &[_][]const u8{};
+        },
     }
 }

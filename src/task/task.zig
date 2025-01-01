@@ -1,9 +1,8 @@
 const logger = @import("../log.zig");
+const cpu = @import("../cpu/cpu.zig");
 const std = @import("std");
 
-const arch = @import("arch");
-pub const tcb = arch.tcb;
-// TODO: properly implement this
+pub const tcb = cpu.tcb;
 pub const thread_fn = *const fn (args: ?*anyopaque) void;
 pub var current_task: ?*task_handle = null;
 pub var head_task: ?*task_handle = null;

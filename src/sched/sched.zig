@@ -35,9 +35,7 @@ pub fn switch_tasks() struct { old: ?*task.task_handle, new: ?*task.task_handle 
 
 pub inline fn yield() void {
     current_tcb = &task.current_task.?.control;
-    asm volatile (
-        \\ ecall
-    );
+    cpu.yield();
 }
 
 fn create_idle_task(stack: []usize) task.task_handle {

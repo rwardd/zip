@@ -1,31 +1,36 @@
-const word_size = 4;
+const nvic_interrupt_control_reg: *u32 = @ptrFromInt(0xe000ed04);
+const pendsv_bit: usize = 1 << 28;
 
 pub const tcb = packed struct {
-    sp: usize = 0,
-    ra: usize = 0,
-    s1: usize = 0,
-    s2: usize = 0,
-    s3: usize = 0,
-    s4: usize = 0,
-    s5: usize = 0,
-    s6: usize = 0,
-    s7: usize = 0,
-    s8: usize = 0,
-    s9: usize = 0,
-    s10: usize = 0,
-    s11: usize = 0,
+    psp: usize = 0,
+    lr: usize = 0,
+    r1: usize = 0,
+    r2: usize = 0,
+    r3: usize = 0,
+    r4: usize = 0,
+    r5: usize = 0,
+    r6: usize = 0,
+    r7: usize = 0,
+    r8: usize = 0,
+    r9: usize = 0,
+    r10: usize = 0,
+    r11: usize = 0,
     id: u32 = 0,
     priority: u32 = 0,
 };
 
 pub inline fn yield() void {
+    nvic_interrupt_control_reg.* = pendsv_bit;
     asm volatile (
-        \\ ecall
+        \\ dsb ::: "memory"
+    );
+
+    asm volatile (
+        \\ isb
     );
 }
 
-pub inline fn save_context() void {}
-
+// To do - convert to arm asm
 pub fn exec_first_task(current: *tcb) void {
     asm volatile (
         \\ lw sp,   0(%[new_tcb])
