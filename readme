@@ -11,15 +11,15 @@ To start qemu in debug mode (will spawn gdb server and wait for remote connectio
 Basic scheduler working:
 - Pathetic RR scheduling
 - Tasks have to yield themselves (coop multitasking)
-- Working on risc-v 32 virt qemu
+- Working on risc-v 32 virt qemuA
+
+in progress:
+- lookng at cortex-m0
 
 Next up:
-- Get interrupts working + remove bad hacks
-- ecall for yielding?
-- maybe look at cortex-m0
-- revert tcb registers - arch specific packed struct?
+- start writing some tests (urgent)
+- revert tcb registers - arch specific packed struct? (still need to fix because it's terrible)
 - Put thread stacks in own linker section
-- start writing some tests
 
 Notes:
 Start with microkernel. Implement barebones for basic scheduling and i/o.
@@ -53,5 +53,4 @@ todo: everything
 	- semaphore
 	- mutex
 	- queue
-- smp?
 
