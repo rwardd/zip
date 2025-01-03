@@ -59,7 +59,7 @@ fn select_target(arch: Arch) std.Target.Query {
                 .cpu_arch = Target.Cpu.Arch.riscv32,
                 .os_tag = Target.Os.Tag.freestanding,
                 .abi = Target.Abi.none,
-                .cpu_model = .{ .explicit = &std.Target.riscv.cpu.baseline_rv32 },
+                .cpu_model = .{ .explicit = &std.Target.riscv.cpu.generic_rv32 },
             };
         },
         else => {

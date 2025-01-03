@@ -1,4 +1,3 @@
-.balign 128, 0
 .option norvc
 .global zvt
 zvt:

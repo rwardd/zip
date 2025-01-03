@@ -5,9 +5,13 @@ const logger = @import("log.zig");
 fn hello1(args: ?*anyopaque) void {
     var cnt: u32 = 1;
     while (true) {
-        logger.log("Hello from task 1 ");
-        log_number(cnt);
+        var cnt1: u32 = 0;
+        logger.log("Hello from task 1\n");
+        logger.log("\r");
         cnt = (cnt + 1) % 0x70; // loop back round without overflowing u8
+        while (cnt1 < 0xFFF) {
+            cnt1 += 1;
+        }
         sched.yield();
     }
     _ = args;
@@ -16,7 +20,11 @@ fn hello1(args: ?*anyopaque) void {
 fn hello2(args: ?*anyopaque) void {
     _ = args;
     while (true) {
+        var cnt1: u32 = 0;
         logger.log("Hello from task 2\n");
+        while (cnt1 < 0xFFF) {
+            cnt1 += 1;
+        }
         sched.yield();
     }
 }
@@ -24,7 +32,11 @@ fn hello2(args: ?*anyopaque) void {
 fn hello3(args: ?*anyopaque) void {
     _ = args;
     while (true) {
+        var cnt1: u32 = 0;
         logger.log("Hello from task 3\n");
+        while (cnt1 < 0xFFF) {
+            cnt1 += 1;
+        }
         sched.yield();
     }
 }
@@ -42,7 +54,7 @@ var thread1_stack = task.create_stack(256); //[_]u8{0} ** 256;
 var thread2_stack = task.create_stack(256); //[_]u8{0} ** 256;
 var thread3_stack = task.create_stack(256); //[_]u8{0} ** 256;
 
-export fn start() noreturn {
+export fn start() void {
     // Not sure if there is a better way to do this
     var thread1 = task.create(&hello1, 3, &thread1_stack);
     var thread2 = task.create(&hello2, 2, &thread2_stack);
@@ -52,11 +64,10 @@ export fn start() noreturn {
     task.init(&thread2);
     task.init(&thread3);
 
-    log_number(task.get_thread_tcb(0).?.priority);
-    log_number(task.get_thread_tcb(1).?.priority);
-    log_number(task.get_thread_tcb(2).?.priority);
-
-    logger.log("Hello world\n");
+    //logger.log("\n");
+    //log_number(task.get_thread_tcb(0).?.priority);
+    //log_number(task.get_thread_tcb(1).?.priority);
+    //log_number(task.get_thread_tcb(2).?.priority);
     sched.run();
     while (true) {}
 }

@@ -1,4 +1,4 @@
-.section .init
+.section .text
 
 .global _start
 _start:
@@ -18,7 +18,7 @@ entrypoint:
     csrw mtvec, t0
     li t1, 0x08
     csrw mstatus, t1
-    tail  start
+    call start
 
 /* Loop */
 wait_interrupt:
