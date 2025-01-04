@@ -30,7 +30,7 @@ pub inline fn yield() void {
     );
 }
 
-export fn PendSV_Handler() void {
+export fn pend_sv_handler() void {
     asm volatile (
         \\ .extern current_tcb
         \\ .syntax unified
@@ -47,51 +47,43 @@ export fn PendSV_Handler() void {
         \\ mov r7, r11
         \\ cpsid i
         \\ bl context_switch
+        \\ .align 4
     );
 }
 
 // To do - convert to arm asm
 pub fn exec_first_task(current: *tcb) void {
+    _ = current;
     asm volatile (
-        \\ lw sp,   0(%[new_tcb])
-        \\ lw ra,   4(%[new_tcb])
-        \\ lw s0,   8(%[new_tcb])
-        \\ lw s1,   12(%[new_tcb])
-        \\ lw s2,   16(%[new_tcb])
-        \\ lw s3,   20(%[new_tcb])
-        \\ lw s4,   24(%[new_tcb])
-        \\ lw s5,   28(%[new_tcb])
-        \\ lw s6,   32(%[new_tcb])
-        \\ lw s7,   36(%[new_tcb])
-        \\ lw s8,   40(%[new_tcb])
-        \\ lw s9,   44(%[new_tcb])
-        \\ lw s10,  48(%[new_tcb])
-        \\ ret
-        :
-        : [new_tcb] "{x17}" (current),
-        : "memory"
-    );
+        \\ .syntax unified
+        \\ cpsie i
+        \\ dsb
+        \\ isb
+        \\ svc #100
+        \\ nop
+        \\ .align 4
+        ::: "memory");
 }
 
 pub inline fn restore_context(curr_tcb: *tcb) void {
     asm volatile (
-        \\ lw sp,   0(%[curr_tcb])
-        \\ lw t0,   4(%[curr_tcb])
-        \\ csrw mepc, t0 
-        \\ lw s0,   8(%[curr_tcb])
-        \\ lw s1,   12(%[curr_tcb])
-        \\ lw s2,   16(%[curr_tcb])
-        \\ lw s3,   24(%[curr_tcb])
-        \\ lw s4,   28(%[curr_tcb])
-        \\ lw s5,   32(%[curr_tcb])
-        \\ lw s6,   36(%[curr_tcb])
-        \\ lw s7,   40(%[curr_tcb])
-        \\ lw s8,   44(%[curr_tcb])
-        \\ lw s9,   48(%[curr_tcb])
-        \\ lw s10,  52(%[curr_tcb])
-        \\ mret
+        \\ .syntax unified
+        \\ cpsie i
+        \\ ldr r2, =current_tcb
+        \\ ldr r1, [r2]
+        \\ ldr r0, [r1]
+        \\ adds r1, r1, #20
+        \\ ldmia r1!, {r4-r7}
+        \\ mov r8, r4
+        \\ mov r9, r5
+        \\ mov r10, r6
+        \\ mov r11, r7
+        \\ msr psp, r0
+        \\ subs r1, r1 #32
+        \\ ldmia r1!, {r3-r7}
+        \\ bx r3
+        \\ .align 4
         :
-        : [curr_tcb] "{x17}" (curr_tcb),
-        : "memory"
+        : [current_tcb] "i" (curr_tcb),
     );
 }
