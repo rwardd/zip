@@ -1,4 +1,4 @@
-const nvic_interrupt_control_reg: *u32 = @ptrFromInt(0xe000ed04);
+const nvic_interrupt_control_reg: *volatile u32 = @ptrFromInt(0xe000ed04);
 const pendsv_bit: usize = 1 << 28;
 
 pub const tcb = packed struct {
@@ -27,6 +27,26 @@ pub inline fn yield() void {
 
     asm volatile (
         \\ isb
+    );
+}
+
+export fn PendSV_Handler() void {
+    asm volatile (
+        \\ .extern current_tcb
+        \\ .syntax unified
+        \\ mrs r0, psp
+        \\ ldr r2, =current_tcb
+        \\ ldr r1, [r2]
+        \\ str r0, [r1]
+        \\ subs r1, r1, #4
+        \\ mov r3, lr
+        \\ stmia r1!, {r3-r7}
+        \\ mov r4, r8
+        \\ mov r5, r9
+        \\ mov r6, r10
+        \\ mov r7, r11
+        \\ cpsid i
+        \\ bl context_switch
     );
 }
 
