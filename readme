@@ -11,7 +11,7 @@ To start qemu in debug mode (will spawn gdb server and wait for remote connectio
 Basic scheduler working:
 - Pathetic RR scheduling
 - Tasks have to yield themselves (coop multitasking)
-- Working on risc-v 32 virt qemuA
+- Working on risc-v 32 virt qemu
 
 in progress:
 - lookng at cortex-m0
