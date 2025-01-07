@@ -6,29 +6,29 @@ BASE_ADDRESS = 0x80000000;
 SECTIONS
 {
     . = BASE_ADDRESS;
-    .text :  {
+    .text : {
+        . = ALIGN(4);
         *(.text .text.*);
-        . = ALIGN(0x1000);
     }
 
-    .rodata :  {
-        . = ALIGN(16);
+    .rodata : {
+        . = ALIGN(4);
         *(.srodata .srodata.*);
-        . = ALIGN(16);
+        . = ALIGN(4);
         *(.rodata .rodata.*);
     }
 
-    .data :  {
-        . = ALIGN(16);
+    .data : {
+        . = ALIGN(4);
         *(.sdata .sdata.*);
-        . = ALIGN(16);
+        . = ALIGN(4);
         *(.data .data.*);
     }
 
-    .bss :  {
-        . = ALIGN(16);
+    .bss : {
+        . = ALIGN(4);
         *(.sbss .sbss.*);
-        . = ALIGN(16);
+        . = ALIGN(4);
         *(.bss .bss.*);
     }
 
