@@ -89,6 +89,8 @@ fn initialise_architecture(arch: Arch, b: *std.Build, exe: *std.Build.Step.Compi
             exe.setLinkerScriptPath(b.path("arch/riscv/rv32/link.ld"));
         },
         Arch.arm_cortex_m0 => {
+            exe.addAssemblyFile(b.path("arch/arm/_start.S"));
+            exe.addAssemblyFile(b.path("arch/arm/irq.s"));
             exe.setLinkerScriptPath(b.path("arch/arm/link.ld"));
         },
         else => {},

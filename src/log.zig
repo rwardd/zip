@@ -1,4 +1,4 @@
-const UART_BUF_REG_ADDR: usize = 0x10000000;
+const UART_BUF_REG_ADDR: usize = 0x4000C000;
 
 pub fn log(msg: []const u8) void {
     const uart_buf_reg: *u8 = @ptrFromInt(UART_BUF_REG_ADDR);

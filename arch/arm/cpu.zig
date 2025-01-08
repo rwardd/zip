@@ -2,8 +2,8 @@ const nvic_interrupt_control_reg: *volatile u32 = @ptrFromInt(0xe000ed04);
 const pendsv_bit: usize = 1 << 28;
 
 pub const tcb = packed struct {
-    psp: usize = 0,
-    lr: usize = 0,
+    sp: usize = 0,
+    ra: usize = 0,
     r1: usize = 0,
     r2: usize = 0,
     r3: usize = 0,
@@ -18,12 +18,11 @@ pub const tcb = packed struct {
     id: u32 = 0,
     priority: u32 = 0,
 };
-
 pub inline fn yield() void {
     nvic_interrupt_control_reg.* = pendsv_bit;
     asm volatile (
-        \\ dsb ::: "memory"
-    );
+        \\ dsb 
+        ::: "memory");
 
     asm volatile (
         \\ isb
@@ -53,37 +52,41 @@ export fn pend_sv_handler() void {
 
 // To do - convert to arm asm
 pub fn exec_first_task(current: *tcb) void {
-    _ = current;
     asm volatile (
-        \\ .syntax unified
+        \\ ldr r1, [r0]
+        \\ ldr r2, [r0, #4] 
+        \\ movs r1, #2
+        \\ msr CONTROL, r1
+        \\ msr psp, r0
         \\ cpsie i
         \\ dsb
         \\ isb
-        \\ svc #100
-        \\ nop
+        \\ bx r2
         \\ .align 4
-        ::: "memory");
+        :
+        : [curr] "r" (current),
+        : "memory"
+    );
 }
 
 pub inline fn restore_context(curr_tcb: *tcb) void {
     asm volatile (
         \\ .syntax unified
-        \\ cpsie i
-        \\ ldr r2, =current_tcb
-        \\ ldr r1, [r2]
-        \\ ldr r0, [r1]
-        \\ adds r1, r1, #20
-        \\ ldmia r1!, {r4-r7}
+        \\ ldr r1, [r0]
+        \\ adds r0, r0, #20
+        \\ ldmia r0!, {r4-r7}
         \\ mov r8, r4
         \\ mov r9, r5
         \\ mov r10, r6
         \\ mov r11, r7
-        \\ msr psp, r0
-        \\ subs r1, r1 #32
-        \\ ldmia r1!, {r3-r7}
+        \\ msr psp, r1
+        \\ subs r0, r0, #32
+        \\ ldmia r0!, {r3-r7}
+        \\ cpsie i
         \\ bx r3
         \\ .align 4
         :
-        : [current_tcb] "i" (curr_tcb),
+        : [curr] "r" (curr_tcb),
+        : "memory"
     );
 }
