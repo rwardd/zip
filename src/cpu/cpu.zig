@@ -14,6 +14,10 @@ inline fn save_context() void {
     arch.save_context();
 }
 
+pub fn initialise_stack(stack: []u32, tick: usize) usize {
+    return arch.initialise_stack(stack, tick);
+}
+
 inline fn restore_context(curr_tcb: *tcb) void {
     arch.restore_context(curr_tcb);
 }

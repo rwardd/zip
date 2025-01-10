@@ -18,6 +18,7 @@ pub const tcb = packed struct {
     id: u32 = 0,
     priority: u32 = 0,
 };
+
 pub inline fn yield() void {
     nvic_interrupt_control_reg.* = pendsv_bit;
     asm volatile (
@@ -26,6 +27,17 @@ pub inline fn yield() void {
     asm volatile (
         \\ isb
     );
+}
+
+pub fn initialise_stack(stack: []u32, tick: usize) usize {
+    const stack_top = stack.len;
+
+    stack.ptr[stack_top - 1] = 0x1 << 24; // Program Status Register (xPSR)
+    stack.ptr[stack_top - 2] = tick; // Program Counter (PC)
+    stack.ptr[stack_top - 3] = 0x14141414; // Link Register (LR)
+    stack.ptr[stack_top - 17] = 0xFFFFFFFD; // EXC_RETURN to thread mode
+
+    return @intFromPtr(&stack.ptr[stack_top - 17]);
 }
 
 export fn pend_sv_handler() callconv(.Naked) void {

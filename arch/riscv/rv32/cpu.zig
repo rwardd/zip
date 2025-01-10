@@ -18,6 +18,12 @@ pub const tcb = packed struct {
     priority: u32 = 0,
 };
 
+pub fn initialise_stack(stack: []u32, tick: usize) usize {
+    const stack_top = stack.len;
+    stack.ptr[stack_top - 16] = tick; // Top of stack is RA
+    return @intFromPtr(&stack.ptr[stack_top - 16]);
+}
+
 pub inline fn yield() void {
     asm volatile (
         \\ ecall
@@ -29,18 +35,19 @@ pub inline fn save_context() void {}
 pub fn exec_first_task(current: *tcb) void {
     asm volatile (
         \\ lw sp,   0(%[new_tcb])
-        \\ lw ra,   4(%[new_tcb])
-        \\ lw s0,   8(%[new_tcb])
-        \\ lw s1,   12(%[new_tcb])
-        \\ lw s2,   16(%[new_tcb])
-        \\ lw s3,   20(%[new_tcb])
-        \\ lw s4,   24(%[new_tcb])
-        \\ lw s5,   28(%[new_tcb])
-        \\ lw s6,   32(%[new_tcb])
-        \\ lw s7,   36(%[new_tcb])
-        \\ lw s8,   40(%[new_tcb])
-        \\ lw s9,   44(%[new_tcb])
-        \\ lw s10,  48(%[new_tcb])
+        \\ lw ra,   0(sp)
+        \\ lw x5,   8(sp)
+        \\ lw x6,   12(sp)
+        \\ lw x7,   16(sp)
+        \\ lw x8,   20(sp)
+        \\ lw x9,   24(sp)
+        \\ lw x10,  28(sp)
+        \\ lw x11,  32(sp)
+        \\ lw x12,  36(sp)
+        \\ lw x13,  40(sp)
+        \\ lw x14,  44(sp)
+        \\ lw x15,  48(sp)
+        \\ addi sp, sp, 52
         \\ ret
         :
         : [new_tcb] "{x17}" (current),
@@ -50,21 +57,24 @@ pub fn exec_first_task(current: *tcb) void {
 
 pub inline fn restore_context(curr_tcb: *tcb) void {
     asm volatile (
-        \\ lw sp,   0(%[curr_tcb])
-        \\ lw t0,   4(%[curr_tcb])
+        \\ lw t0,   0(%[curr_tcb])
+        \\ lw sp,   0(t1)
+        \\ lw t0,   0(sp)
         \\ csrw mepc, t0 
-        \\ lw s0,   8(%[curr_tcb])
-        \\ lw s1,   12(%[curr_tcb])
-        \\ lw s2,   16(%[curr_tcb])
-        \\ lw s3,   24(%[curr_tcb])
-        \\ lw s4,   28(%[curr_tcb])
-        \\ lw s5,   32(%[curr_tcb])
-        \\ lw s6,   36(%[curr_tcb])
-        \\ lw s7,   40(%[curr_tcb])
-        \\ lw s8,   44(%[curr_tcb])
-        \\ lw s9,   48(%[curr_tcb])
-        \\ lw s10,  52(%[curr_tcb])
-        \\ mret
+        \\ lw x1,   4(sp) 
+        \\ lw x5,   8(sp)
+        \\ lw x6,   12(sp)
+        \\ lw x7,   16(sp)
+        \\ lw x8,   20(sp)
+        \\ lw x9,   24(sp)
+        \\ lw x10,  28(sp)
+        \\ lw x11,  32(sp)
+        \\ lw x12,  36(sp)
+        \\ lw x13,  40(sp)
+        \\ lw x14,  44(sp)
+        \\ lw x15,  48(sp)
+        \\ addi sp, sp, 52
+        \\ mret     
         :
         : [curr_tcb] "{x17}" (curr_tcb),
         : "memory"

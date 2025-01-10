@@ -43,8 +43,8 @@ var thread2_stack = task.create_stack(256); //[_]u8{0} ** 256;
 var thread3_stack = task.create_stack(256); //[_]u8{0} ** 256;
 
 export fn start() noreturn {
-    const SHPR3: *volatile u32 = @ptrFromInt(0xE000ED20);
-    SHPR3.* = 0x00C00000;
+    //    const SHPR3: *volatile u32 = @ptrFromInt(0xE000ED20);
+    //    SHPR3.* = 0x00C00000;
     // Not sure if there is a better way to do this
     var thread1 = task.create(&hello1, 3, &thread1_stack);
     var thread2 = task.create(&hello2, 2, &thread2_stack);

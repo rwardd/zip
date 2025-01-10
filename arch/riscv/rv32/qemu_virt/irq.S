@@ -5,20 +5,21 @@
 .extern isr_sp
 
 .macro save_context
+    addi sp, sp, -52
+	sw x1,   4(sp)
+	sw x5,   8(sp)
+	sw x6,   12(sp)
+	sw x7,   16(sp)
+	sw x8,   20(sp)
+	sw x9,   24(sp)
+	sw x10,  28(sp)
+	sw x11,  32(sp)
+	sw x12,  36(sp)
+	sw x13,  40(sp)
+	sw x14,  44(sp)
+	sw x15,  48(sp)
 	lw t0,  current_tcb
-	sw sp,   0(t0)
-	sw x1,   4(t0)
-	sw x5,   8(t0)
-	sw x6,   12(t0)
-	sw x7,   16(t0)
-	sw x8,   20(t0)
-	sw x9,   24(t0)
-	sw x10,  28(t0)
-	sw x11,  32(t0)
-	sw x12,  36(t0)
-	sw x13,  40(t0)
-	sw x14,  44(t0)
-	sw x15,  48(t0)
+    sw sp, 0(t0)
 .endm
 
 
@@ -29,7 +30,7 @@ rv32_exception_handler:
     save_context
     csrr a1, mepc
     addi a1, a1, 4
-    sw a1, 4(x17)
+    sw a1, 0(sp)
     lw sp, isr_sp
     call context_switch
 
