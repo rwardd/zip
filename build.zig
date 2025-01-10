@@ -6,7 +6,7 @@ const Feature = std.Target.Cpu.Feature;
 pub fn build(b: *std.Build) void {
     const debug = b.option(bool, "debug", "Run qemu in debug mode") orelse false;
 
-    const arch_opt = b.option([]const u8, "architecture", "The target architecture") orelse "rv32";
+    const arch_opt = b.option([]const u8, "arch", "The target architecture: Options are rv32, arm_cortex_m0") orelse "rv32";
     const arch = std.meta.stringToEnum(Arch, arch_opt).?;
     const platform_opt = b.option([]const u8, "platform", "The target platform") orelse "qemu_virt";
     const platform = std.meta.stringToEnum(Platform, platform_opt).?;

@@ -1,3 +1,5 @@
+pub const UART_BUF_REG_ADDR: usize = 0x10000000;
+
 const word_size = 4;
 
 pub const tcb = packed struct {
@@ -30,8 +32,6 @@ pub inline fn yield() void {
     );
 }
 
-pub inline fn save_context() void {}
-
 pub fn exec_first_task(current: *tcb) void {
     asm volatile (
         \\ lw sp,   0(%[new_tcb])
@@ -51,32 +51,6 @@ pub fn exec_first_task(current: *tcb) void {
         \\ ret
         :
         : [new_tcb] "{x17}" (current),
-        : "memory"
-    );
-}
-
-pub inline fn restore_context(curr_tcb: *tcb) void {
-    asm volatile (
-        \\ lw t0,   0(%[curr_tcb])
-        \\ lw sp,   0(t1)
-        \\ lw t0,   0(sp)
-        \\ csrw mepc, t0 
-        \\ lw x1,   4(sp) 
-        \\ lw x5,   8(sp)
-        \\ lw x6,   12(sp)
-        \\ lw x7,   16(sp)
-        \\ lw x8,   20(sp)
-        \\ lw x9,   24(sp)
-        \\ lw x10,  28(sp)
-        \\ lw x11,  32(sp)
-        \\ lw x12,  36(sp)
-        \\ lw x13,  40(sp)
-        \\ lw x14,  44(sp)
-        \\ lw x15,  48(sp)
-        \\ addi sp, sp, 52
-        \\ mret     
-        :
-        : [curr_tcb] "{x17}" (curr_tcb),
         : "memory"
     );
 }
