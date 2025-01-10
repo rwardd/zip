@@ -23,7 +23,6 @@ pub inline fn yield() void {
     asm volatile (
         \\ dsb 
         ::: "memory");
-
     asm volatile (
         \\ isb
     );
@@ -36,21 +35,21 @@ export fn pend_sv_handler() void {
         \\ mrs r0, psp
         \\ ldr r2, =current_tcb
         \\ ldr r1, [r2]
+        \\ subs r0, r0, #36
         \\ str r0, [r1]
-        \\ subs r1, r1, #4
         \\ mov r3, lr
-        \\ stmia r1!, {r3-r7}
+        \\ stmia r0!, {r3-r7}
         \\ mov r4, r8
         \\ mov r5, r9
         \\ mov r6, r10
         \\ mov r7, r11
+        \\ stmia r0!, {r4-r7}
         \\ cpsid i
         \\ bl context_switch
         \\ .align 4
     );
 }
 
-// To do - convert to arm asm
 pub fn exec_first_task(current: *tcb) void {
     asm volatile (
         \\ ldr r1, [r0]
@@ -69,19 +68,36 @@ pub fn exec_first_task(current: *tcb) void {
     );
 }
 
+//pub fn exec_first_task(current: *tcb) void {
+//    asm volatile (
+//        \\ ldr r1, [r0]
+//        \\ ldm r1!, {r3}
+//        \\ movs r2, #2
+//        \\ msr CONTROL, r2
+//        \\ adds r1, #32
+//        \\ msr psp, r1
+//        \\ isb
+//        \\ bx r3
+//        \\ .align 4
+//        :
+//        : [curr] "r" (current),
+//        : "memory"
+//    );
+//}
+
 pub inline fn restore_context(curr_tcb: *tcb) void {
     asm volatile (
         \\ .syntax unified
         \\ ldr r1, [r0]
-        \\ adds r0, r0, #20
-        \\ ldmia r0!, {r4-r7}
+        \\ adds r1, r1, #20
+        \\ ldmia r1!, {r4-r7}
         \\ mov r8, r4
         \\ mov r9, r5
         \\ mov r10, r6
         \\ mov r11, r7
         \\ msr psp, r1
-        \\ subs r0, r0, #32
-        \\ ldmia r0!, {r3-r7}
+        \\ subs r1, r1, #36
+        \\ ldmia r1!, {r3-r7}
         \\ cpsie i
         \\ bx r3
         \\ .align 4
