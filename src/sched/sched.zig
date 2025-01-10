@@ -5,7 +5,7 @@ const cpu = @import("../cpu/cpu.zig");
 
 var isr_stack = task.create_stack(256);
 export var isr_sp: usize = 0;
-export var current_tcb: ?*task.tcb = null;
+export var current_tcb: ?*volatile task.tcb = null;
 
 fn idle_tick(args: ?*anyopaque) void {
     _ = args;
@@ -15,7 +15,7 @@ fn idle_tick(args: ?*anyopaque) void {
     }
 }
 
-pub fn switch_tasks() struct { old: ?*task.task_handle, new: ?*task.task_handle } {
+pub fn switch_tasks() void {
     const old_head = task.head_task;
     task.head_task = task.head_task.?.next;
     var tmp: ?*task.task_handle = task.head_task;
@@ -30,7 +30,7 @@ pub fn switch_tasks() struct { old: ?*task.task_handle, new: ?*task.task_handle 
     old_head.?.next = null;
     tmp.?.next = old_head;
     task.current_task = task.head_task;
-    return .{ .old = old_head, .new = task.current_task };
+    current_tcb = &task.current_task.?.control;
 }
 
 pub inline fn yield() void {

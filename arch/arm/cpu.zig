@@ -28,7 +28,7 @@ pub inline fn yield() void {
     );
 }
 
-export fn pend_sv_handler() void {
+export fn pend_sv_handler() callconv(.Naked) void {
     asm volatile (
         \\ .extern current_tcb
         \\ .syntax unified
@@ -46,9 +46,32 @@ export fn pend_sv_handler() void {
         \\ stmia r0!, {r4-r7}
         \\ cpsid i
         \\ bl context_switch
+        \\ cpsie i
+        \\ ldr r2, =current_tcb
+        \\ ldr r1, [r2]
+        \\ ldr r0, [r1]
+        \\ adds r0, r0, #20
+        \\ ldmia r0!, {r4-r7}
+        \\ mov r8, r4
+        \\ mov r9, r5
+        \\ mov r10, r6
+        \\ mov r11, r7
+        \\ msr psp, r0
+        \\ subs r0, r0, #36
+        \\ ldmia r0!, {r3-r7}
+        \\ bx r3
         \\ .align 4
-    );
+        ::: "memory");
 }
+
+//pub inline fn restore_context(curr_tcb: *tcb) void {
+//    asm volatile (
+//        \\ .syntax unified
+//        :
+//        : [curr] "r" (curr_tcb),
+//        : "memory"
+//    );
+//}
 
 pub fn exec_first_task(current: *tcb) void {
     asm volatile (
@@ -84,25 +107,3 @@ pub fn exec_first_task(current: *tcb) void {
 //        : "memory"
 //    );
 //}
-
-pub inline fn restore_context(curr_tcb: *tcb) void {
-    asm volatile (
-        \\ .syntax unified
-        \\ ldr r1, [r0]
-        \\ adds r1, r1, #20
-        \\ ldmia r1!, {r4-r7}
-        \\ mov r8, r4
-        \\ mov r9, r5
-        \\ mov r10, r6
-        \\ mov r11, r7
-        \\ msr psp, r1
-        \\ subs r1, r1, #36
-        \\ ldmia r1!, {r3-r7}
-        \\ cpsie i
-        \\ bx r3
-        \\ .align 4
-        :
-        : [curr] "r" (curr_tcb),
-        : "memory"
-    );
-}

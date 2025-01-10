@@ -7,6 +7,8 @@ MEMORY
   ram (rwx) : ORIGIN = 0x20000000, LENGTH = 0x00008000
 }
 
+_stack_top = ORIGIN(ram) + (LENGTH(ram));
+
 SECTIONS
 {
     .text : {
@@ -37,5 +39,4 @@ SECTIONS
 
     PROVIDE(_bss_start = ADDR(.bss));
     PROVIDE(_bss_end = _bss_start + SIZEOF(.bss));
-    PROVIDE(_stack_top = _bss_end + 0x1000);
 }

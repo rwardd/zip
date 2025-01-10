@@ -55,15 +55,14 @@ pub fn init(handle: *task_handle) void {
         current_task = handle;
         head_task = handle;
     }
-    var stack_top = handle.stack.len;
+    const stack_top = handle.stack.len;
     handle.stack.ptr[stack_top - 1] = 0x1 << 24; // Program Status Register (xPSR)
     handle.stack.ptr[stack_top - 2] = @intFromPtr(handle.tick); // Program Counter (PC)
     handle.stack.ptr[stack_top - 3] = 0x14141414; // Link Register (LR)
-    stack_top -= 17; // R0 .. R12
-    handle.stack.ptr[stack_top] = 0xFFFFFFFD; // EXC_RETURN to thread mode
+    handle.stack.ptr[stack_top - 17] = 0xFFFFFFFD; // EXC_RETURN to thread mode
 
     handle.control.id = id;
-    handle.control.sp = @intFromPtr(&handle.stack.ptr[stack_top]);
+    handle.control.sp = @intFromPtr(&handle.stack.ptr[handle.stack.len - 17]);
     handle.control.ra = @intFromPtr(handle.tick);
 }
 

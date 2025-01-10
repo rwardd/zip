@@ -23,6 +23,6 @@ pub inline fn yield() void {
 }
 
 export fn context_switch() void {
-    const tasks = sched.switch_tasks();
-    restore_context(&tasks.new.?.control);
+    sched.switch_tasks();
+    //restore_context(&tasks.new.?.control);
 }
