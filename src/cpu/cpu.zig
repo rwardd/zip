@@ -28,5 +28,4 @@ pub inline fn yield() void {
 
 export fn context_switch() void {
     sched.switch_tasks();
-    //restore_context(&tasks.new.?.control);
 }

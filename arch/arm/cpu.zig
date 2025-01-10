@@ -1,3 +1,5 @@
+pub const UART_BUF_REG_ADDR: usize = 0x4000C000;
+const SHPR3: *volatile u32 = @ptrFromInt(0xE000ED20);
 const nvic_interrupt_control_reg: *volatile u32 = @ptrFromInt(0xe000ed04);
 const pendsv_bit: usize = 1 << 28;
 
@@ -41,6 +43,7 @@ pub fn initialise_stack(stack: []u32, tick: usize) usize {
 }
 
 export fn pend_sv_handler() callconv(.Naked) void {
+    SHPR3.* = 0x00C00000;
     asm volatile (
         \\ .extern current_tcb
         \\ .syntax unified

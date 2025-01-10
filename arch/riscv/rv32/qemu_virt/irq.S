@@ -3,6 +3,7 @@
 
 .extern current_tcb
 .extern isr_sp
+.extern context_switch
 
 .macro save_context
     addi sp, sp, -52
@@ -33,6 +34,26 @@ rv32_exception_handler:
     sw a1, 0(sp)
     lw sp, isr_sp
     call context_switch
+    lw t1,   current_tcb
+    lw sp,   0(t1)
+    lw t0,   0(sp)
+    csrw mepc, t0 
+    lw x1,   4(sp) 
+    lw x5,   8(sp)
+    lw x6,   12(sp)
+    lw x7,   16(sp)
+    lw x8,   20(sp)
+    lw x9,   24(sp)
+    lw x10,  28(sp)
+    lw x11,  32(sp)
+    lw x12,  36(sp)
+    lw x13,  40(sp)
+    lw x14,  44(sp)
+    lw x15,  48(sp)
+    addi sp, sp, 52
+    mret     
+
+
 
 exception:
 	li t0, 5 /* hard fault */
